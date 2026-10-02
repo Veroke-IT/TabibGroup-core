@@ -6,7 +6,6 @@ add_action('wp_ajax_get_cart_data', 'fetch_and_store_cart_info');
 function fetch_and_store_cart_info() {
     if (is_user_logged_in()) {
         check_ajax_referer('mainData_nonce', '_wpnonce');
-        global $tabibgroup_base_url;
         $current_user_id = get_current_user_id();
         
         // Retrieve API credentials from user meta
@@ -27,7 +26,7 @@ function fetch_and_store_cart_info() {
         // }
 
         // API URL
-        $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/carts.json?lang=en';
+        $api_url = tg_api_url( 'api/endpoints/mobile/v1/carts.json' ) . '?lang=en';
 
         // Perform the API request
         $response = wp_remote_get($api_url, [
@@ -67,7 +66,6 @@ add_action('wp_ajax_update_cart_data', 'fetch_and_update_cart_info');
 function fetch_and_update_cart_info() {
     if (is_user_logged_in()) {
         check_ajax_referer('get_availability_type_nonce', '_wpnonce');
-        global $tabibgroup_base_url;
         $current_user_id = get_current_user_id();
         
         // Retrieve API credentials from user meta
@@ -88,7 +86,7 @@ function fetch_and_update_cart_info() {
         // }
 
         // API URL
-        $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/carts.json?lang=en';
+        $api_url = tg_api_url( 'api/endpoints/mobile/v1/carts.json' ) . '?lang=en';
 
         // Perform the API request
         $response = wp_remote_get($api_url, [
@@ -129,7 +127,6 @@ add_action('wp_ajax_update_cart_item_info', 'update_cart_item_info_callback');
 function update_cart_item_info_callback() {
     if (is_user_logged_in()) {
         check_ajax_referer('get_availability_type_nonce', '_wpnonce');
-        global $tabibgroup_base_url;
         $current_user_id = get_current_user_id();
         
         // Retrieve API credentials from user meta
@@ -150,7 +147,7 @@ function update_cart_item_info_callback() {
 
         // Construct API URL
         // API URL
-        $api_url = $tabibgroup_base_url . "/api/endpoints/mobile/v1/cart_items/{$cart_item_id}.json?lang=en&cart_id={$cart_id}&reserved_date={$reserved_date}&reserved_time={$reserved_time}";
+        $api_url = tg_api_url( "api/endpoints/mobile/v1/cart_items/{$cart_item_id}.json" ) . "?lang=en&cart_id={$cart_id}&reserved_date={$reserved_date}&reserved_time={$reserved_time}";
 
         // Send PUT request with auth headers
         $response = wp_remote_request($api_url, [

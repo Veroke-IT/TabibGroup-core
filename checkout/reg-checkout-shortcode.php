@@ -6,8 +6,7 @@ add_shortcode('tg_checkout', function() {
 	if (!is_user_logged_in()) {
         return '<div class="message error"><span class="text">يرجى تسجيل الدخول أولا إلى حسابك.</span></div>';
     }
-
-    global $tabibgroup_base_url;
+    
     $current_user_id = get_current_user_id();
 	// Fetch user cart details 
 	$user_cart_id = get_user_meta($current_user_id, 'api_cart_id', true);
@@ -40,9 +39,9 @@ add_shortcode('tg_checkout', function() {
 
     // Choose API endpoint based on checkout type
     if ($checkout_type === '0') {
-        $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/carts/installments_checkout.json?lang=en&cart_id=' . $user_cart_id;
+        $api_url = tg_api_url( 'api/endpoints/mobile/v2/carts/installments_checkout.json' ) . '?lang=en&cart_id=' . $user_cart_id;
     } else {
-        $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/cart_items.json?lang=en&cart_id=' . $user_cart_id;
+        $api_url = tg_api_url( 'api/endpoints/mobile/v2/cart_items.json' ) . '?lang=en&cart_id=' . $user_cart_id;
     }
 
 	// Make API call with authentication headers
@@ -260,8 +259,6 @@ add_action('wp_ajax_apply_wallet_deduction', 'apply_wallet_deduction');
 function apply_wallet_deduction() {
 	check_ajax_referer('get_checkout_nonce', 'security');
 
-	global $tabibgroup_base_url;
-
 	if (!is_user_logged_in()) {
 		wp_send_json_error(['message' => 'User not logged in']);
 	}
@@ -271,7 +268,7 @@ function apply_wallet_deduction() {
 	$client = get_user_meta($current_user_id, 'api_client', true);
 	$uid = get_user_meta($current_user_id, 'api_uid', true);
 
-	$walletapi_url = $tabibgroup_base_url . '/api/v7/users/wallet.json?lang=ar';
+	$walletapi_url = tg_api_url('api/v7/users/wallet.json') . '?lang=ar';
 
 	$wallet_response = wp_remote_get($walletapi_url, [
 		'headers' => [
@@ -301,8 +298,6 @@ add_action('wp_ajax_tg_update_bill_checkout', 'tg_update_bill_checkout_handler')
 function tg_update_bill_checkout_handler() {
 	check_ajax_referer('get_checkout_nonce', 'security');
 
-	global $tabibgroup_base_url;
-
 	if (!is_user_logged_in()) {
 		wp_send_json_error(['message' => 'User not logged in']);
 	}
@@ -324,7 +319,7 @@ function tg_update_bill_checkout_handler() {
 	$uid = get_user_meta($current_user_id, 'api_uid', true);
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v3/bills/update_bill.json?lang=en';
+	$api_url = tg_api_url( 'api/endpoints/mobile/v3/bills/update_bill.json' ) . '?lang=en';
 
 	$response = wp_remote_request($api_url, [
 		'method'    => 'PUT',
@@ -374,8 +369,6 @@ add_action('wp_ajax_tg_update_bill_tabby_tamara_checkout', 'tg_update_bill_tabby
 function tg_update_bill_tabby_tamara_checkout_handler() {
 	check_ajax_referer('get_checkout_nonce', 'security');
 
-	global $tabibgroup_base_url;
-
 	if (!is_user_logged_in()) {
 		wp_send_json_error(['message' => 'User not logged in']);
 	}
@@ -395,7 +388,7 @@ function tg_update_bill_tabby_tamara_checkout_handler() {
 	$uid = get_user_meta($current_user_id, 'api_uid', true);
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/bills/update_bill.json?lang=en';
+	$api_url = tg_api_url( 'api/endpoints/mobile/v2/bills/update_bill.json' ) . '?lang=en';
 
 	$response = wp_remote_request($api_url, [
 		'method'    => 'PUT',
@@ -429,8 +422,6 @@ add_action('wp_ajax_tg_tabby_checkout', 'tg_tabby_checkout_handler');
 function tg_tabby_checkout_handler() {
 	check_ajax_referer('get_checkout_nonce', 'security');
 
-	global $tabibgroup_base_url;
-
 	if (!is_user_logged_in()) {
 		wp_send_json_error(['message' => 'User not logged in']);
 	}
@@ -448,7 +439,7 @@ function tg_tabby_checkout_handler() {
 	$uid = get_user_meta($current_user_id, 'api_uid', true);
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/partner/p1/tabby/checkout_session';
+	$api_url = tg_api_url( 'api/endpoints/partner/p1/tabby/checkout_session' );
 
 	// Prepare the JSON body in the required format
 	$request_body = json_encode(array(
@@ -494,8 +485,6 @@ add_action('wp_ajax_tg_tamara_checkout', 'tg_tamara_checkout_handler');
 function tg_tamara_checkout_handler() {
 	check_ajax_referer('get_checkout_nonce', 'security');
 
-	global $tabibgroup_base_url;
-
 	if (!is_user_logged_in()) {
 		wp_send_json_error(['message' => 'User not logged in']);
 	}
@@ -513,7 +502,7 @@ function tg_tamara_checkout_handler() {
 	$uid = get_user_meta($current_user_id, 'api_uid', true);
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/partner/p1/tamara/checkout_session';
+	$api_url = tg_api_url( 'api/endpoints/partner/p1/tamara/checkout_session' );
 
 	// Prepare the JSON body in the required format
 	$request_body = json_encode(array(

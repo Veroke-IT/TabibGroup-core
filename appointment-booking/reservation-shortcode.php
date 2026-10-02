@@ -109,7 +109,6 @@ function reservation_page_shortcode() {
 add_action('wp_ajax_get_calendar_data', 'proxy_calendar_data');
 add_action('wp_ajax_nopriv_get_calendar_data', 'proxy_calendar_data');
 function proxy_calendar_data() {
-	global $tabibgroup_base_url;
     $offer_id = intval($_GET['offer_id']);
     $appointment_type = sanitize_text_field($_GET['appointment_type']) ?? '';
     if (!$offer_id) {
@@ -117,7 +116,7 @@ function proxy_calendar_data() {
         exit;
     }
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/offers/'.$offer_id.'/get_calendar.json?appointment_type='.$appointment_type;
+	$api_url = tg_api_url( 'api/endpoints/mobile/v1/offers/' . $offer_id . '/get_calendar.json' ) . '?appointment_type=' . rawurlencode( $appointment_type );
     $response = wp_remote_get($api_url);
     if (is_wp_error($response)) {
         wp_send_json_error(['message' => 'Error fetching data from API']);
@@ -135,14 +134,13 @@ function proxy_calendar_data() {
 add_action('wp_ajax_get_offer_data', 'handle_get_offer_data');
 add_action('wp_ajax_nopriv_get_offer_data', 'handle_get_offer_data');
 function handle_get_offer_data() {
-	global $tabibgroup_base_url;
     $offer_id = intval($_GET['offer_id']);
     if (!$offer_id) {
         wp_send_json_error(['message' => 'Invalid offer ID.']);
         exit;
     }
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/v7/offers/'.$offer_id.'.json?lang=en';
+	$api_url = tg_api_url( "api/v7/offers/{$offer_id}.json" ) . '?lang=en';
     $response = wp_remote_get($api_url);
     if (is_wp_error($response)) {
         wp_send_json_error(['message' => 'Error fetching data from API']);
@@ -160,9 +158,8 @@ function handle_get_offer_data() {
 add_action('wp_ajax_add_to_cart', 'proxy_add_to_cart_request');
 add_action('wp_ajax_nopriv_add_to_cart', 'proxy_add_to_cart_request');
 function proxy_add_to_cart_request() {
-	global $tabibgroup_base_url;
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/cart_items.json?lang=en';
+	$api_url = tg_api_url( 'api/endpoints/mobile/v1/cart_items.json' ) . '?lang=en';
     $body = json_decode(file_get_contents('php://input'), true);
     $response = wp_remote_post($api_url, [
         'headers' => [

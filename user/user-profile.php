@@ -7,14 +7,13 @@ function get_user_profile_shortcode() {
         return 'Please log in to view your profile.';
     }
 
-	global $tabibgroup_base_url;
     $current_user_id = get_current_user_id();
     $access_token = get_user_meta($current_user_id, 'api_access_token', true);
     $client = get_user_meta($current_user_id, 'api_client', true);
     $uid = get_user_meta($current_user_id, 'api_uid', true);
 
     // API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/users/get_profile';
+	$api_url = tg_api_url('/api/endpoints/mobile/v1/users/get_profile');
 
     $response = wp_remote_get($api_url, [
         'headers' => [
@@ -181,7 +180,6 @@ add_shortcode('user_profile_form', 'get_user_profile_shortcode');
 // AJAX callback function (action)
 function update_user_profile() {
     if( isset($_POST['form_data']) ) {
-        global $tabibgroup_base_url;
         // Get current user meta
         $current_user_id = get_current_user_id();
         $access_token = get_user_meta($current_user_id, 'api_access_token', true);
@@ -202,7 +200,7 @@ function update_user_profile() {
         ));
 
         // API URL
-	    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/users/update_profile';
+	    $api_url = tg_api_url('/api/endpoints/mobile/v1/users/update_profile');
 
         $response = wp_remote_post($api_url, array(
             'method'    => 'POST',

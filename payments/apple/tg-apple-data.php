@@ -6,7 +6,6 @@ defined( 'ABSPATH' ) || exit;
 add_action( 'wp_ajax_process_apple_data', 'handle_apple_data' );
 add_action( 'wp_ajax_nopriv_process_apple_data', 'handle_apple_data' );
 function handle_apple_data() {
-    global $tabibgroup_base_url;
 
     // Get PayFort data from AJAX request
     $apple_data = isset($_POST['apple_data']) ? json_decode(stripslashes($_POST['apple_data']), true) : [];
@@ -21,7 +20,7 @@ function handle_apple_data() {
         $uid = get_user_meta($current_user_id, 'api_uid', true);
 
         // API URL
-        $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v3/bills/payment_bill.json?lang=en';
+        $api_url = tg_api_url('/api/endpoints/mobile/v3/bills/payment_bill.json?lang=en');
 
         $response = wp_remote_request($api_url, [
             'method'    => 'PUT',

@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-	const site_url = window.location.origin;
+	const base_url = naviData.baseUrl;
 	const offerId = document.querySelector('.sku').textContent;
 	const reviewsSection = document.querySelector('.tg-reviews-slider-block');
 	// Fetch reviews data
-	fetch(`${site_url}/api/v7/offer_reviews/index_by_offer.json?lang=en&offer_id=${offerId}`)
+	fetch(`${base_url}/api/v7/offer_reviews/index_by_offer.json?lang=en&offer_id=${offerId}`)
 		.then(response => response.json())
 		.then(data => {
 		if (data && data.data && data.data.length > 0) {

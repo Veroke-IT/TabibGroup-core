@@ -89,15 +89,13 @@ function fetch_user_appointments_callback() {
     if (!is_user_logged_in()) {
         wp_send_json_error(['message' => 'User not logged in']);
     }
-
-    global $tabibgroup_base_url;
     $current_user_id = get_current_user_id();
     $access_token = get_user_meta($current_user_id, 'api_access_token', true);
     $client = get_user_meta($current_user_id, 'api_client', true);
     $uid = get_user_meta($current_user_id, 'api_uid', true);
     $payment_status_code = isset($_GET['payment_status_code']) ? sanitize_text_field($_GET['payment_status_code']) : '0';
 
-    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/user/user_billings?payment_status_code=' . $payment_status_code . '&page=1';
+    $api_url = tg_api_url( 'api/endpoints/mobile/v2/user/user_billings' ) . '?payment_status_code=' . $payment_status_code . '&page=1';
 
     $response = wp_remote_get($api_url, [
         'headers' => [

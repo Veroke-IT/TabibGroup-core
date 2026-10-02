@@ -12,15 +12,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-function tabibgroup_init_globals() {
-    // Retrieve the test mode option & Define global variables
-    $test_mode = get_option('enable_test_mode', false);
-    global $tabibgroup_test_mode, $tabibgroup_base_url;
-    $tabibgroup_test_mode = $test_mode;
-    $tabibgroup_base_url = $test_mode ? 'https://api-tabibgroup-revamp-dev.vproj.com' : 'https://tabibgroup.net';
-}
-add_action('init', 'tabibgroup_init_globals');
-
 // Fetch categories for the product, ordered by hierarchy
 add_filter('woocommerce_product_categories', function($categories, $product_id) {
     $terms = get_the_terms($product_id, 'product_cat');
@@ -60,7 +51,7 @@ function add_tg_js_import() {
         'email'         => $is_logged_in ? $current_user->user_email : '',
         'access_token'  => $is_logged_in ? get_user_meta($user_id, 'api_access_token', true) : '',
         'ajax_url'      => admin_url('admin-ajax.php'),
-        'home_api'      => esc_url_raw(home_url('/api/endpoints/mobile/v3/home.json')),
+        'home_api' => esc_url_raw( tg_api_url( 'api/endpoints/mobile/v3/home.json' ) ),
         'guest_api'     => get_option('enable_test_mode', false)
             ? 'https://staging.tgchat.app/api/chat/registerGuest'
             : 'https://tgchat.app/api/chat/registerGuest',
@@ -75,21 +66,21 @@ function add_tg_js_import() {
     if ( !is_page('thank-you') ) {
         wp_enqueue_script('tg-main-js', plugins_url('assets/js/tg-main.js', __FILE__ ), array('jquery'), null, true);
         wp_localize_script('tg-main-js', 'mainData', [
+            'baseUrl'    => esc_url_raw( tg_base_url() ),
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce( 'mainData_nonce' ),
             'is_logged_in' => is_user_logged_in(),
             'isTestMode' => get_option('enable_test_mode', false),
-            'baseUrl' => get_option('enable_test_mode', false) ? 'https://api-tabibgroup-revamp-dev.vproj.com' : 'https://tabibgroup.net',
-        ]);
+            ]);
     }
 
 	if ( is_product() ) {
 		wp_enqueue_script( 'tg-offers-js', plugins_url('assets/js/tg-offers.js', __FILE__ ), array( 'jquery' ), null, true );
         wp_localize_script( 'tg-offers-js', 'offersObj', array (
+            'baseUrl'    => esc_url_raw( tg_base_url() ),
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'nonce' => wp_create_nonce( 'offers_frontend_nonce' ),
             'isTestMode' => get_option('enable_test_mode', false),
-            'baseUrl' => get_option('enable_test_mode', false) ? 'https://api-tabibgroup-revamp-dev.vproj.com' : 'https://tabibgroup.net',
         ));
         wp_enqueue_script('tg-reservation-js', plugins_url('assets/js/tg-reservation.js', __FILE__ ), array('jquery'), null, true);
         global $post;
@@ -111,6 +102,7 @@ function add_tg_js_import() {
     if ( is_shop() ) {
 		wp_enqueue_script( 'tg-home-navi-js', plugins_url('assets/js/tg-home-navi.js', __FILE__ ), array( 'jquery' ), null, true );
         wp_localize_script('tg-home-navi-js', 'naviData', [
+            'baseUrl'    => esc_url_raw( tg_base_url() ),
             'query_vars' => [
                 'collection_id' => get_query_var('collection_id'),
                 'section_id'    => get_query_var('section_id'),
@@ -127,30 +119,30 @@ function add_tg_js_import() {
     if ( is_page('2603') ) {
         wp_enqueue_script('tg-availability-js', plugins_url('assets/js/tg-availability.js', __FILE__ ), array( 'jquery' ), null, true );
         wp_localize_script('tg-availability-js', 'availabilityData', [
+            'baseUrl'    => esc_url_raw( tg_base_url() ),
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce( 'get_availability_type_nonce' ),
             'isTestMode' => get_option('enable_test_mode', false),
-            'baseUrl' => get_option('enable_test_mode', false) ? 'https://api-tabibgroup-revamp-dev.vproj.com' : 'https://tabibgroup.net',
         ]);
     }
 
     if ( is_page('cart') ) {
         wp_enqueue_script('tg-cart-js', plugins_url('assets/js/tg-cart.js', __FILE__ ), array( 'jquery' ), null, true );
         wp_localize_script('tg-cart-js', 'cartData', [
+            'baseUrl'    => esc_url_raw( tg_base_url() ),
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce( 'get_cart_type_nonce' ),
             'isTestMode' => get_option('enable_test_mode', false),
-            'baseUrl' => get_option('enable_test_mode', false) ? 'https://api-tabibgroup-revamp-dev.vproj.com' : 'https://tabibgroup.net',
         ]);
     }
 
     if ( is_page('checkout') ) {
         wp_enqueue_script('tg-checkout-js', plugins_url('assets/js/tg-checkout.js', __FILE__ ), array( 'jquery' ), null, true );
         wp_localize_script('tg-checkout-js', 'checkoutData', [
+            'baseUrl'    => esc_url_raw( tg_base_url() ),
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce( 'get_checkout_nonce' ),
             'isTestMode' => get_option('enable_test_mode', false),
-            'baseUrl' => get_option('enable_test_mode', false) ? 'https://api-tabibgroup-revamp-dev.vproj.com' : 'https://tabibgroup.net',
         ]);
         wp_enqueue_script( 'apple-pay-script', 'https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js', [], null, true );
     }
@@ -278,15 +270,6 @@ add_action('wpseo_register_extra_replacements', function () {
 add_filter( 'wpseo_sitemap_entries_per_page', function( $n ) {
     return 200;
 });
-
-// // This checks if the request matches the /offers/{id}/share pattern and redirects to /offers/{id}/
-// add_action('template_redirect', function() {
-//     $request_uri = $_SERVER['REQUEST_URI'];
-//     if (preg_match('#^/offers/(\d+)/share/?$#', $request_uri, $matches)) {
-//         wp_redirect(home_url("/offers/{$matches[1]}/"), 301);
-//         exit;
-//     }
-// });
 
 // Redirect the user to the actual product URL from sku
 add_action('template_redirect', 'redirect_offer_sku_to_product');
@@ -595,6 +578,7 @@ add_action('wp_head', function () {
 }, 1);
 
 // Include files
+require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
 require_once plugin_dir_path(__FILE__) . 'shortcodes/shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'offers/sync-offers.php';
 require_once plugin_dir_path(__FILE__) . 'offers/sync-offers-api.php';

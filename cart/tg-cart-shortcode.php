@@ -34,13 +34,12 @@ function tg_cart_shortcode() {
 }
 
 function render_cart_buttons() {
-    global $tabibgroup_base_url;
     $cart_id = get_user_meta(get_current_user_id(), 'api_cart_id', true);
     // if (!$cart_id) {
     //     wp_send_json_error(['message' => 'Cart ID not found.']);
     // }
     // API URL
-    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/cart_items.json?lang=en&cart_id='.$cart_id;
+    $api_url = tg_api_url( 'api/endpoints/mobile/v2/cart_items.json' ) . '?lang=en&cart_id=' . $cart_id;
     $response = wp_remote_get($api_url);
     if (is_wp_error($response)) {
         //error_log("Cart is empty!");
@@ -67,7 +66,7 @@ function render_cart_buttons() {
     </script>';
     if ($count_cartItems > 1 ) {
         // API URL
-        $discount_api_url = $tabibgroup_base_url . '/api/v7/settings.json?lang=ar';
+        $discount_api_url = tg_api_url('/api/v7/settings.json?lang=ar');
         $discount_response = wp_remote_get($discount_api_url);
 
         if (is_wp_error($discount_response)) {
@@ -114,7 +113,6 @@ function render_cart_buttons() {
 // AJAX handler to fetch cart items
 add_action('wp_ajax_tg_get_cart_items', 'tg_get_cart_items');
 function tg_get_cart_items() {
-    global $tabibgroup_base_url;
     $cart_id = get_user_meta(get_current_user_id(), 'api_cart_id', true);
 
     if (!$cart_id) {
@@ -122,7 +120,7 @@ function tg_get_cart_items() {
     }
 
     // API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/cart_items.json?lang=en&cart_id='.$cart_id;
+	$api_url = tg_api_url( 'api/endpoints/mobile/v2/cart_items.json' ) . '?lang=en&cart_id=' . $cart_id;
     $response = wp_remote_get($api_url);
     if (is_wp_error($response)) {
         wp_send_json_error(['message' => 'Failed to connect to API.']);
@@ -222,7 +220,6 @@ function tg_get_cart_items() {
 
 add_action('wp_ajax_tg_get_cart_items_count', 'tg_get_cart_items_count_callback');
 function tg_get_cart_items_count_callback() {
-    global $tabibgroup_base_url;
     $cart_id = get_user_meta(get_current_user_id(), 'api_cart_id', true);
 
     if (!$cart_id) {
@@ -237,7 +234,7 @@ function tg_get_cart_items_count_callback() {
     $check_out_type = isset($_POST['check_out_type']) ? intval($_POST['check_out_type']) : '';
 
     // API URL
-    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/cart_items.json?lang=en&cart_id=' . $cart_id;
+    $api_url = tg_api_url( 'api/endpoints/mobile/v2/cart_items.json' ) . '?lang=en&cart_id=' . $cart_id;
     $response = wp_remote_get($api_url);
     
     if (is_wp_error($response)) {
@@ -273,7 +270,7 @@ function tg_get_cart_items_count_callback() {
         }
 
         // API URL
-        $checkout_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/carts/check_out.json?lang=en&cart_id='.$cart_id.'&check_out_type='.$check_out_type.'';
+        $checkout_url = tg_api_url('/api/endpoints/mobile/v1/carts/check_out.json?lang=en&cart_id='.$cart_id.'&check_out_type='.$check_out_type.'');
 
         //error_log("checkout_url " . $checkout_url);
 
@@ -310,7 +307,7 @@ function tg_get_cart_items_count_callback() {
     if ($count_cartItems === 1) {
         // $stored_data = get_option('tabibgroup_api_settings');
         // API URL
-        $discount_api_url = $tabibgroup_base_url . '/api/v7/settings.json?lang=ar';
+        $discount_api_url = tg_api_url('/api/v7/settings.json?lang=ar');
         $discount_response = wp_remote_get($discount_api_url);
 
         if (is_wp_error($discount_response)) {
@@ -354,7 +351,6 @@ function tg_get_cart_items_count_callback() {
 // AJAX handler to delete and show confirm dialog before cart item deletion
 add_action('wp_ajax_tg_delete_cart_item', 'tg_delete_cart_item_callback');
 function tg_delete_cart_item_callback() {
-    global $tabibgroup_base_url;
     // Check if the cartItemId is provided
     if (!isset($_POST['cartItemIdToDelete']) || empty($_POST['cartItemIdToDelete'])) {
         wp_send_json_error(['message' => 'Invalid cart item ID']);
@@ -368,7 +364,7 @@ function tg_delete_cart_item_callback() {
     }
 
     // API URL
-    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/cart_items/'.$cartItemIdToDelete.'.json?lang=en';
+    $api_url = tg_api_url( 'api/endpoints/mobile/v1/cart_items/' . $cartItemIdToDelete . '.json' ) . '?lang=en';
     // Make the DELETE request
     $response = wp_remote_request($api_url, [
         'method' => 'DELETE',
@@ -395,7 +391,6 @@ function tg_delete_cart_item_callback() {
 // Cart Checkout action callback
 add_action('wp_ajax_tg_cart_checkout', 'tg_cart_checkout_handler');
 function tg_cart_checkout_handler() {
-    global $tabibgroup_base_url;
     // Verify nonce for security
     if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'get_cart_type_nonce')) {
         wp_send_json_error(['message' => 'Invalid nonce']);
@@ -422,7 +417,7 @@ function tg_cart_checkout_handler() {
     }
 
     // API URL
-    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/carts/check_out.json?lang=en&cart_id='.$cart_id.'&check_out_type='.$check_out_type.'';
+    $api_url = tg_api_url( 'api/endpoints/mobile/v1/carts/check_out.json' ) . '?lang=en&cart_id=' . $cart_id . '&check_out_type=' . $check_out_type;
 
     //error_log($api_url);
 
@@ -457,7 +452,6 @@ function tg_cart_checkout_handler() {
 // Get Update Bill details action callback
 add_action('wp_ajax_tg_get_bill', 'tg_get_bill_callback');
 function tg_get_bill_callback() {
-    global $tabibgroup_base_url;
     // Verify nonce for security
     if (!isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'get_cart_type_nonce')) {
         wp_send_json_error(['message' => 'Invalid nonce']);
@@ -477,7 +471,7 @@ function tg_get_bill_callback() {
     }
 
     // API URL
-    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/bills.json?lang=en';
+    $api_url = tg_api_url( 'api/endpoints/mobile/v1/bills.json' ) . '?lang=en';
 
     //error_log($api_url);
 

@@ -4,7 +4,6 @@ defined( 'ABSPATH' ) || exit;
 
 add_action( 'bricks/form/custom_action', 'signup_to_TG', 10, 1 );
 function signup_to_TG( $form ) {
-	global $tabibgroup_base_url;
 	$form_fields   = $form->get_fields();
 	$form_id       = $form_fields['formId'];
 
@@ -20,7 +19,7 @@ function signup_to_TG( $form ) {
 	$password_confirmation = $form_fields['form-field-uwdypv'] ?? '';
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/auth/users/v2/registrations.json';
+	$api_url = tg_api_url('/api/endpoints/auth/users/v2/registrations.json');
 
 	// API request body
 	$body = array(
@@ -138,7 +137,6 @@ add_action('wp_ajax_confirm_user_registration', 'confirm_user_registration');
 add_action('wp_ajax_nopriv_confirm_user_registration', 'confirm_user_registration');
 function confirm_user_registration() {
 	check_ajax_referer('confirm_user_registration_nonce', '_wpnonce');
-	global $tabibgroup_base_url;
 
 	// Check if registration data exists in the session
 	if (!isset($_SESSION['registration_data'])) {
@@ -150,7 +148,7 @@ function confirm_user_registration() {
 	$data = $_SESSION['registration_data'];
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/auth/users/v2/confirmations.json?lang=ar';
+	$api_url = tg_api_url('/api/endpoints/auth/users/v2/confirmations.json?lang=ar');
 
 	// Make the API request
 	$response = wp_remote_post($api_url, [

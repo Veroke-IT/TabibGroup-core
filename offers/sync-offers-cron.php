@@ -31,8 +31,7 @@ if (!function_exists('tg_log')) {
 /* Fetch API Offers */
 if (!function_exists('fetch_api_offers')) {
     function fetch_api_offers() {
-        global $tabibgroup_base_url;
-        $api_url = $tabibgroup_base_url . '/api/word_press/v1/offers.json';
+        $api_url = tg_api_url('/api/word_press/v1/offers.json');
 
         $response = wp_remote_get($api_url);
         if (is_wp_error($response)) {

@@ -4,7 +4,6 @@ defined( 'ABSPATH' ) || exit;
 
 add_action('bricks/form/custom_action', 'handle_forgot_pw_TG', 10, 1);
 function handle_forgot_pw_TG($form) {
-	global $tabibgroup_base_url;
     $form_fields = $form->get_fields();
     $form_id     = $form_fields['formId'];
 
@@ -16,7 +15,7 @@ function handle_forgot_pw_TG($form) {
 	$phone = $prefix . $raw_phone;
 
     // API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/users.json?lang=en&phone=' . urlencode($phone);
+	$api_url = tg_api_url('/api/endpoints/mobile/v1/users.json?lang=en&phone=' . urlencode($phone));
     $response = wp_remote_get($api_url);
 
 	if (is_wp_error($response)) {
@@ -71,7 +70,6 @@ function handle_forgot_pw_TG($form) {
 // Confirmation action to handle update pw
 add_action('bricks/form/custom_action', 'handle_update_password_TG', 10, 1);
 function handle_update_password_TG($form) {
-	global $tabibgroup_base_url;
     $form_fields = $form->get_fields();
     $form_id     = $form_fields['formId'];
 
@@ -110,7 +108,7 @@ function handle_update_password_TG($form) {
 	$password_confirmation = $form_fields['form-field-ijendt'] ?? '';
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/auth/users/v2/passwords/update_password.json';
+	$api_url = tg_api_url('/api/endpoints/auth/users/v2/passwords/update_password.json');
 
 	// Prepare the POST data
 	$body = [

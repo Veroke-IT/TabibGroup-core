@@ -32,7 +32,6 @@ if (!function_exists('tg_clinic_log')) {
 ---------------------------------------------------------- */
 if (!function_exists('fetch_api_clinics')) {
     function fetch_api_clinics() {
-        global $tabibgroup_base_url;
 
         $all_clinics = [];
         $page = 1;
@@ -42,7 +41,7 @@ if (!function_exists('fetch_api_clinics')) {
 
         while (true) {
 
-            $api_url = $tabibgroup_base_url . '/api/word_press/v1/doctors?page=' . $page;
+            $api_url = tg_api_url('/api/word_press/v1/doctors?page=' . $page);
             tg_clinic_log("Requesting Page {$page}: {$api_url}");
 
             $response = wp_remote_get($api_url);
@@ -168,8 +167,7 @@ if (!function_exists('import_clinic')) {
          /* FEATURED IMAGE */
         if (!empty($clinic_data['doctor_image'])) {
             try {
-                global $tabibgroup_base_url;
-                $featured_image_url = $tabibgroup_base_url . $clinic_data['doctor_image'];
+                $featured_image_url = tg_api_url($clinic_data['doctor_image']);
                 set_clinic_featured_image_WPcron($post_id, $featured_image_url);
                 tg_clinic_log("Image updated for clinic ID {$post_id}");
             } catch (Throwable $e) {

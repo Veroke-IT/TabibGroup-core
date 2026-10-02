@@ -4,7 +4,6 @@ defined( 'ABSPATH' ) || exit;
 
 add_action( 'bricks/form/custom_action', 'login_to_TG', 10, 1 );
 function login_to_TG( $form ) {
-	global $tabibgroup_base_url;
 	$form_fields   = $form->get_fields();
 	$form_id       = $form_fields['formId'];
 
@@ -18,7 +17,7 @@ function login_to_TG( $form ) {
 	$redirect_url = $form_fields['form-field-tfihez'] ?? '';
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/endpoints/auth/users/v2/sessions.json';
+	$api_url = tg_api_url('/api/endpoints/auth/users/v2/sessions.json');
 
 	// API request body
 	$body = array(
@@ -132,7 +131,7 @@ function login_to_TG( $form ) {
 				//error_log("Access Token: $access_token_cart, Client: $client_cart, UID: $uid_cart");
 
 				// Make the second API request to get cart details
-				$cart_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/carts.json?lang=en';
+				$cart_url = tg_api_url('/api/endpoints/mobile/v1/carts.json?lang=en');
 
 				$cart_response = wp_remote_get($cart_url, [
 					'headers' => [
@@ -203,7 +202,7 @@ function login_to_TG( $form ) {
 				// error_log("Access Token: $access_token_cart, Client: $client_cart, UID: $uid_cart");
 
 				// CART API URL
-				$cart_url = $tabibgroup_base_url . '/api/endpoints/mobile/v1/carts.json?lang=en';
+				$cart_url = tg_api_url('/api/endpoints/mobile/v1/carts.json?lang=en');
 
 				$cart_response = wp_remote_get($cart_url, [
 					'headers' => [

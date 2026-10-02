@@ -13,7 +13,6 @@ function payfort_checkout_shortcode() {
     }
 
     if ( isset($_GET['bill_id']) && isset($_GET['amount']) ) {
-        global $tabibgroup_base_url;
         $current_user_id = get_current_user_id();
         $access_token = get_user_meta($current_user_id, 'api_access_token', true);
         $client = get_user_meta($current_user_id, 'api_client', true);
@@ -24,7 +23,7 @@ function payfort_checkout_shortcode() {
         $payment_method = sanitize_text_field($_GET['payment_method']);
         
         // API URL to fetch PayFort checkout details
-        $api_url = $tabibgroup_base_url . '/api/word_press/v1/payfort/payfort_checkout?bill_id='. $bill_id .'&amount='.$amount;
+        $api_url = tg_api_url('/api/word_press/v1/payfort/payfort_checkout?bill_id='. $bill_id .'&amount='.$amount);
         
         $response = wp_remote_get($api_url, [
             'headers' => [

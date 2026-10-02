@@ -164,19 +164,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const getDoctor_id = naviData.query_vars?.doctor_id || '';
         const getSpecialist_id = naviData.query_vars?.specialist_id || '';
         let { city, lat, long } = getUserLocation();
-        const site_url = window.location.origin;
+        const base_url = naviData.baseUrl;
 
         if (getSection_id) {
-            return `${site_url}/api/endpoints/mobile/v1/sections/${getSection_id}.json?lang=ar&page=1&city=${encodeURIComponent(city)}`;
+            return `${base_url}/api/endpoints/mobile/v1/sections/${getSection_id}.json?lang=ar&page=1&city=${encodeURIComponent(city)}`;
         }
         if (getCollection_id) {
-            return `${site_url}/api/endpoints/mobile/v1/offer_collections/${getCollection_id}.json?lang=ar&page=1&city=${encodeURIComponent(city)}&filter=&min_value=&max_value`;
+            return `${base_url}/api/endpoints/mobile/v1/offer_collections/${getCollection_id}.json?lang=ar&page=1&city=${encodeURIComponent(city)}&filter=&min_value=&max_value`;
         }
         if (getDoctor_id) {
-            return `${site_url}/api/endpoints/mobile/v2/offers/doctor_offers.json?lang=ar&category=&doctor_id=${getDoctor_id}&service=&machines=&latitude=${lat}&longitude=${long}&date=&sub_category=&city=${encodeURIComponent(city)}&filter=&min_value=&max_value=&sort_by=&num_sessions=&num_body_parts=&sort_direction=&sort_category=&page=1`;
+            return `${base_url}/api/endpoints/mobile/v2/offers/doctor_offers.json?lang=ar&category=&doctor_id=${getDoctor_id}&service=&machines=&latitude=${lat}&longitude=${long}&date=&sub_category=&city=${encodeURIComponent(city)}&filter=&min_value=&max_value=&sort_by=&num_sessions=&num_body_parts=&sort_direction=&sort_category=&page=1`;
         }
         if (getSpecialist_id) {
-            return `${site_url}/api/endpoints/mobile/v1/specialists/${getSpecialist_id}.json?lang=ar&page=1&city=${encodeURIComponent(city)}&filter=&min_value=&max_value`;
+            return `${base_url}/api/endpoints/mobile/v1/specialists/${getSpecialist_id}.json?lang=ar&page=1&city=${encodeURIComponent(city)}&filter=&min_value=&max_value`;
         }
 
         return null;

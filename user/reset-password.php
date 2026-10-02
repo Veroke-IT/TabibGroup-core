@@ -4,7 +4,6 @@ defined( 'ABSPATH' ) || exit;
 
 add_action( 'bricks/form/custom_action', 'handle_pw_reset_TG', 10, 1 );
 function handle_pw_reset_TG( $form ) {
-	global $tabibgroup_base_url;
 	$form_fields   = $form->get_fields();
 	$form_id       = $form_fields['formId'];
 
@@ -19,7 +18,7 @@ function handle_pw_reset_TG( $form ) {
 	$password = $form_fields['form-field-yyfttd'] ?? '';
 
 	// API URL
-	$api_url = $tabibgroup_base_url . '/api/v7/auth/password.json';
+	$api_url = tg_api_url('/api/v7/auth/password.json');
 
 	// API request body
     $body = [

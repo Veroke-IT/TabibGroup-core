@@ -3,8 +3,7 @@
 defined( 'ABSPATH' ) || exit;
 
 function fetch_appointments($status, $headers, $page = 1) {
-    global $tabibgroup_base_url;    
-    $api_url = $tabibgroup_base_url . '/api/endpoints/mobile/v2/user/user_billings?payment_status_code='.$status.'&page='.$page.'';
+    $api_url = tg_api_url( 'api/endpoints/mobile/v2/user/user_billings' ) . '?payment_status_code=' . $status . '&page=' . $page;
     $args = [
         'headers' => $headers,
         'timeout' => 30

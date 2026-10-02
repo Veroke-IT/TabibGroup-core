@@ -180,8 +180,7 @@ if (!function_exists('sync_crm_clinic')) {
         }
         if (!empty($data['doctor_image'])) {
             try {
-                global $tabibgroup_base_url;
-                $featured_image_url = $tabibgroup_base_url . $data['doctor_image'];
+                $featured_image_url = tg_api_url($data['doctor_image']);
                 set_sync_clinic_featured_image($post_id, $featured_image_url);
             } catch (Exception $e) {
                 $logger->error("Failed image for clinic $clinic_id: " . $e->getMessage(), $context);
