@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function fetchHomePageData() {
-        const base_url = naviData.baseUrl;
+        const base_url = homeData.baseUrl;
         let { city, lat, long } = getUserLocation();
         let apiUrl = `${base_url}/api/endpoints/mobile/v3/home.json?lang=en&city=${encodeURIComponent(city)}&latitude=${lat}&longitude=${long}`;
 

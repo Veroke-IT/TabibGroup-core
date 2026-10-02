@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-	const base_url = naviData.baseUrl;
+	const base_url = offersObj.baseUrl;
 	const offerId = document.querySelector('.sku').textContent;
 	const reviewsSection = document.querySelector('.tg-reviews-slider-block');
 	// Fetch reviews data

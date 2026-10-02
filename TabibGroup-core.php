@@ -61,6 +61,10 @@ function add_tg_js_import() {
     // Enqueue other scripts conditionally
     if ( is_front_page() || is_page(15925) ) {
         wp_enqueue_script('tg-home-js', plugins_url('assets/js/tg-home.js', __FILE__ ), array('jquery'), null, true);
+            
+        wp_localize_script( 'tg-home-js', 'homeData', array(
+            'baseUrl' => esc_url_raw( tg_base_url() ),
+        ) );
     }
 
     if ( !is_page('thank-you') ) {
