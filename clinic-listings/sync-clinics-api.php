@@ -9,13 +9,13 @@ add_action('rest_api_init', function () {
     register_rest_route('crm/v1', '/sync-clinic', [
         'methods'  => ['POST', 'DELETE'],
         'callback' => 'sync_crm_clinic',
-		'permission_callback' => function () {
+        'permission_callback' => function () {
             $is_valid = clinic_is_valid_crm_basic_auth();
             $logger = wc_get_logger();
-            $context = ['source' => 'webhook-sync-clinics'];			
+            $context = ['source' => 'webhook-sync-clinics'];
             if (!$is_valid) {
                 $logger->warning('Webhook called: Authentication failed.', $context);
-				return;
+                return;
             }
             return current_user_can('manage_woocommerce') || $is_valid;
         },
@@ -24,7 +24,8 @@ add_action('rest_api_init', function () {
 
 // Validate Request
 if (!function_exists('clinic_is_valid_crm_basic_auth')) {
-    function clinic_is_valid_crm_basic_auth() {
+    function clinic_is_valid_crm_basic_auth()
+    {
         $logger = wc_get_logger();
         $context = ['source' => 'webhook-sync-clinics'];
         $auth_header = null;
@@ -53,7 +54,7 @@ if (!function_exists('clinic_is_valid_crm_basic_auth')) {
         list($consumer_key, $consumer_secret) = explode(':', $decoded, 2);
         $expected_key    = CRM_API_KEY;
         $expected_secret = CRM_API_SECRET;
-        if ( hash_equals($expected_key, $consumer_key) && hash_equals($expected_secret, $consumer_secret) ) return true;
+        if (hash_equals($expected_key, $consumer_key) && hash_equals($expected_secret, $consumer_secret)) return true;
         $logger->warning(
             "Authorization failed: key/secret mismatch. Received key: $consumer_key",
             $context
@@ -64,7 +65,8 @@ if (!function_exists('clinic_is_valid_crm_basic_auth')) {
 
 /* ---------------------- Sync CRM Clinic ---------------------- */
 if (!function_exists('sync_crm_clinic')) {
-    function sync_crm_clinic(WP_REST_Request $request) {
+    function sync_crm_clinic(WP_REST_Request $request)
+    {
         $data = $request->get_json_params();
         $method = $request->get_method();
         $logger  = wc_get_logger();
@@ -162,7 +164,7 @@ if (!function_exists('sync_crm_clinic')) {
             'clinic_doctor_phone'    => $data['doctor_phone'] ?? '',
             'clinic_speciality_text' => $data['speciality_text'] ?? '',
             'clinic_hospital_name'   => $data['hospital_name'] ?? '',
-            'clinic_hospital_address'=> $data['hospital_address'] ?? '',
+            'clinic_hospital_address' => $data['hospital_address'] ?? '',
             'clinic_clinic_location' => $data['clinic_location'] ?? '',
             'clinic_latitude'        => $data['latitude'] ?? '',
             'clinic_longitude'       => $data['longitude'] ?? '',
@@ -171,7 +173,7 @@ if (!function_exists('sync_crm_clinic')) {
             'clinic_doctor_image'    => $data['doctor_image'] ?? '',
             'clinic_offers_count'    => $data['offers_count'] ?? 0,
             'clinic_cities'          =>
-                isset($data['cities']) && is_array($data['cities'])
+            isset($data['cities']) && is_array($data['cities'])
                 ? implode(', ', array_column($data['cities'], 'name'))
                 : '',
         ];
@@ -180,7 +182,7 @@ if (!function_exists('sync_crm_clinic')) {
         }
         if (!empty($data['doctor_image'])) {
             try {
-                $featured_image_url = tg_api_url($data['doctor_image']);
+                $featured_image_url = home_url(ltrim($clinic_data['doctor_image'], '/'));
                 set_sync_clinic_featured_image($post_id, $featured_image_url);
             } catch (Exception $e) {
                 $logger->error("Failed image for clinic $clinic_id: " . $e->getMessage(), $context);
@@ -194,7 +196,8 @@ if (!function_exists('sync_crm_clinic')) {
 
 /* ---------------------- Set Clinic Featured Image ---------------------- */
 if (!function_exists('set_sync_clinic_featured_image')) {
-    function set_sync_clinic_featured_image($post_id, $image_url) {
+    function set_sync_clinic_featured_image($post_id, $image_url)
+    {
         if (empty($image_url) || empty($post_id)) return false;
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';

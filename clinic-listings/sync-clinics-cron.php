@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin: TabibGroup Clinic Sync (Server-side Cron) 
  * File: TabibGroup-core/clinic-listings/sync-clinics-cron.php
@@ -18,7 +19,8 @@ defined('ABSPATH') || exit;
    LOGGING HELPER
 ---------------------------------------------------------- */
 if (!function_exists('tg_clinic_log')) {
-    function tg_clinic_log($message) {
+    function tg_clinic_log($message)
+    {
         $file = WP_CONTENT_DIR . '/tg-clinic-sync.log';
         $time = date('Y-m-d H:i:s');
         $max_size = 0.1 * 1024 * 1024;
@@ -39,7 +41,8 @@ if (!function_exists('tg_clinic_log')) {
    FETCH PAGINATED CLINICS FROM API
 ---------------------------------------------------------- */
 if (!function_exists('fetch_api_clinics')) {
-    function fetch_api_clinics() {
+    function fetch_api_clinics()
+    {
 
         $all_clinics = [];
         $page = 1;
@@ -103,7 +106,8 @@ if (!function_exists('fetch_api_clinics')) {
    FIND EXISTING CLINIC
 ---------------------------------------------------------- */
 if (!function_exists('get_existing_clinic_post_id')) {
-    function get_existing_clinic_post_id($doctor_id, $clinic_name) {
+    function get_existing_clinic_post_id($doctor_id, $clinic_name)
+    {
         global $wpdb;
 
         $clinic_name = sanitize_title($clinic_name);
@@ -126,7 +130,8 @@ if (!function_exists('get_existing_clinic_post_id')) {
    IMPORT SINGLE CLINIC
 ---------------------------------------------------------- */
 if (!function_exists('import_clinic')) {
-    function import_clinic($clinic_data) {
+    function import_clinic($clinic_data)
+    {
 
         if (empty($clinic_data['doctor_id'])) {
             tg_clinic_log("Skipped clinic: doctor_id missing");
@@ -167,7 +172,7 @@ if (!function_exists('import_clinic')) {
             'clinic_doctor_phone'    => $clinic_data['doctor_phone'] ?? '',
             'clinic_speciality_text' => $clinic_data['speciality_text'] ?? '',
             'clinic_hospital_name'   => $clinic_data['hospital_name'] ?? '',
-            'clinic_hospital_address'=> $clinic_data['hospital_address'] ?? '',
+            'clinic_hospital_address' => $clinic_data['hospital_address'] ?? '',
             'clinic_clinic_location' => $clinic_data['clinic_location'] ?? '',
             'clinic_latitude'        => $clinic_data['latitude'] ?? '',
             'clinic_longitude'       => $clinic_data['longitude'] ?? '',
@@ -176,7 +181,7 @@ if (!function_exists('import_clinic')) {
             'clinic_doctor_image'    => $clinic_data['doctor_image'] ?? '',
             'clinic_offers_count'    => $clinic_data['offers_count'] ?? 0,
             'clinic_cities'          =>
-                isset($clinic_data['cities']) && is_array($clinic_data['cities'])
+            isset($clinic_data['cities']) && is_array($clinic_data['cities'])
                 ? implode(', ', array_column($clinic_data['cities'], 'name'))
                 : '',
         ];
@@ -188,7 +193,7 @@ if (!function_exists('import_clinic')) {
         /* FEATURED IMAGE */
         if (!empty($clinic_data['doctor_image'])) {
             try {
-                $featured_image_url = tg_api_url($clinic_data['doctor_image']);
+                $featured_image_url = home_url(ltrim($clinic_data['doctor_image'], '/'));
                 set_clinic_featured_image($post_id, $featured_image_url);
                 tg_clinic_log("Image updated for clinic ID {$post_id}");
             } catch (Throwable $e) {
@@ -207,7 +212,8 @@ if (!function_exists('import_clinic')) {
    FEATURED IMAGE HANDLER
 ---------------------------------------------------------- */
 if (!function_exists('set_clinic_featured_image')) {
-    function set_clinic_featured_image($post_id, $image_url) {
+    function set_clinic_featured_image($post_id, $image_url)
+    {
         if (empty($image_url) || empty($post_id)) return false;
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
