@@ -5,6 +5,13 @@
         return;
     }
 
+    // DOM nodes
+    const container = document.getElementById('tg-chat-container');
+    if (!container) {
+        console.warn('tg-chat-container not found on this page.');
+        return;
+    }
+
     // Storage keys
     const SESSION_KEYS = {
         AUTO_OPENED: 'tg_chat_auto_opened',
@@ -28,6 +35,7 @@
 
     const state = {
         socket: null,
+        elements: {}, // FIX: always defined, filled by rebindChatElements()
         chatServerUrl: localStorage.getItem(config.chatServerUrlKey) || null,
         isConnected: false,
         user: {
@@ -43,8 +51,6 @@
         },
     };
 
-    // DOM nodes
-    const container = document.getElementById('tg-chat-container');
     const launchBtn = container.querySelector('.tg-chat-launch');
     const closeBtn = container.querySelector('.tg-chat-close');
     const sendBtn = container.querySelector('#tg-chat-send');
@@ -59,16 +65,18 @@
         container.classList.add('tg-chat-open');
         if (state.user.is_logged_in || state.guest.id) {
             requestAnimationFrame(() => {
-                const inputText = container.querySelector('#tg-chat-input-text');
-                if (inputText) inputText.focus();
-            });
-            const chatBody = state.elements.messagesWrapper.closest('.tg-chat-body');
-            if (!chatBody) return;
-            requestAnimationFrame(() => {
-                chatBody.scrollTo({
-                    top: chatBody.scrollHeight,
-                    behavior: 'smooth'
-                });
+                const input = container.querySelector('#tg-chat-input-text');
+                if (input) input.focus();
+
+                // FIX: find the chat body directly from the container,
+                // not through state.elements (which may not exist yet)
+                const chatBody = container.querySelector('.tg-chat-body');
+                if (chatBody) {
+                    chatBody.scrollTo({
+                        top: chatBody.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
             });
         }
     }
@@ -98,10 +106,10 @@
         localStorage.setItem(LOCAL_KEYS.PAGE_COUNT, pageCount);
         const chatUsed = sessionStorage.getItem(SESSION_KEYS.CHAT_USED) === "1";
         const autoOpened = sessionStorage.getItem(SESSION_KEYS.AUTO_OPENED) === "1";
-        if (pageCount == 3 && !chatUsed && (!autoOpened || autoOpened === null)) {
+        if (pageCount == 3 && !chatUsed && !autoOpened) {
             openWidget();
             sessionStorage.setItem(SESSION_KEYS.AUTO_OPENED, "1");
-        } 
+        }
         window.addEventListener('storage', (e) => {
             if (e.key === SESSION_KEYS.AUTO_OPENED && e.newValue === '1') {
                 sessionStorage.setItem(SESSION_KEYS.AUTO_OPENED, '1');
@@ -111,18 +119,20 @@
         console.error("Failed to handle chat page visit count:", e);
     }
 
-    // Function to detect inpur text and set direction
+    // Function to detect input text and set direction
     function updateDirection() {
-        const value = state.elements.inputText.value.trim();
+        const el = state.elements.inputText || container.querySelector('#tg-chat-input-text');
+        if (!el) return;
+        const value = el.value.trim();
         if (!value) {
-            state.elements.inputText.style.direction = "rtl";
+            el.style.direction = "rtl";
             return;
         }
         const match = value.match(/[A-Za-z0-9\u0600-\u06FF]/);
         if (!match) return;
         const firstChar = match[0];
         const isEnglish = /^[A-Za-z0-9]/.test(firstChar);
-        state.elements.inputText.style.direction = isEnglish ? "ltr" : "rtl";
+        el.style.direction = isEnglish ? "ltr" : "rtl";
     }
 
     // --- Event handlers for sending messages ---
@@ -250,7 +260,7 @@
     // Save chat server URL to state and localStorage
     function saveChatServerUrl(url) {
         state.chatServerUrl = url;
-        try { localStorage.setItem(config.chatServerUrlKey, url); } 
+        try { localStorage.setItem(config.chatServerUrlKey, url); }
         catch (e) { console.warn("Failed to save chat server URL in localStorage:", e); }
     }
 
@@ -280,7 +290,7 @@
             return null;
         }
     }
-    
+
     // Send text message via socket
     function sendTextMessage(text) {
         if (!text || !text.trim()) return;
@@ -300,12 +310,15 @@
         // console.log("Emitting sendMessage payload:", payload);
         state.socket.emit("sendMessage", payload);
         sessionStorage.setItem(SESSION_KEYS.CHAT_USED, "1");
-        state.elements.inputText.value = "";
+        const input = state.elements.inputText || container.querySelector('#tg-chat-input-text');
+        if (input) input.value = "";
     }
 
     // Wrapper to send text message and trim input
     function sendTextMessageWrapper() {
-        const text = state.elements.inputText.value.trim();
+        const input = state.elements.inputText || container.querySelector('#tg-chat-input-text');
+        if (!input) return;
+        const text = input.value.trim();
         if (!text) return;
         sendTextMessage(text);
     }
@@ -318,40 +331,29 @@
             sendBtn: container.querySelector('#tg-chat-send'),
             // typingIndicator: container.querySelector('.tg-chat-typing')
         };
+
         // Remove old click listeners (avoid duplicates)
-        state.elements.sendBtn?.replaceWith(state.elements.sendBtn.cloneNode(true));
-        state.elements.sendBtn = container.querySelector('#tg-chat-send');
-        state.elements.sendBtn.addEventListener('click', sendTextMessageWrapper);
+        if (state.elements.sendBtn) {
+            state.elements.sendBtn.replaceWith(state.elements.sendBtn.cloneNode(true));
+            state.elements.sendBtn = container.querySelector('#tg-chat-send');
+            state.elements.sendBtn.addEventListener('click', sendTextMessageWrapper);
+        }
 
-        state.elements.inputText.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendTextMessageWrapper();
-            }
-        });
+        if (state.elements.inputText) {
+            state.elements.inputText.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendTextMessageWrapper();
+                }
+            });
 
-        state.elements.inputText.addEventListener("input", updateDirection);
-        state.elements.inputText.addEventListener("paste", () => { setTimeout(updateDirection, 0); });
-        state.elements.inputText.addEventListener("focus", updateDirection);
-        state.elements.inputText.addEventListener("blur", updateDirection);
+            state.elements.inputText.addEventListener("input", updateDirection);
+            state.elements.inputText.addEventListener("paste", () => { setTimeout(updateDirection, 0); });
+            state.elements.inputText.addEventListener("focus", updateDirection);
+            state.elements.inputText.addEventListener("blur", updateDirection);
 
-        state.elements.inputText?.focus();
-
-        // if (state.elements.inputText) {
-        //     state.elements.inputText.addEventListener('keydown', (e) => {
-        //         if (e.key === 'Enter') {
-        //             e.preventDefault();
-        //             sendTextMessageWrapper();
-        //         }
-        //     });
-        //     state.elements.sendBtn.addEventListener('click', sendTextMessageWrapper);
-        //     state.elements.inputText?.focus();
-        // }
-        // if (state.elements.sendBtn) {
-        //     state.elements.sendBtn.addEventListener('click', () => {
-        //         sendTextMessage(state.elements.inputText.value);
-        //     });
-        // }
+            state.elements.inputText.focus();
+        }
     }
 
     // Check if text contains Arabic characters
@@ -381,7 +383,8 @@
 
     // Append message to DOM
     function appendMessageDOM(msg, { instant = false } = {}) {
-        if (!state.elements.messagesWrapper) {
+        const messagesWrapper = state.elements.messagesWrapper || container.querySelector('.tg-chat-messages');
+        if (!messagesWrapper) {
             console.log('appendMessageDOM called but .tg-chat-messages not found yet.');
             return;
         }
@@ -421,26 +424,26 @@
                     fullImg.style.maxHeight = '90%';
                     overlay.appendChild(fullImg);
                     // Close button
-                    const closeBtn = document.createElement('button');
-                    closeBtn.textContent = '✕';
-                    closeBtn.style.position = 'absolute';
-                    closeBtn.style.top = '20px';
-                    closeBtn.style.right = '30px';
-                    closeBtn.style.height = '32px';
-                    closeBtn.style.width = '32px';
-                    closeBtn.style.fontSize = '18px';
-                    closeBtn.style.fontWeight = 900;
-                    closeBtn.style.lineHeight = '20px';
-                    closeBtn.style.textAlign = 'center';
-                    closeBtn.style.textShadow = '0px 1px 0px #000';
-                    closeBtn.style.color = '#000';
-                    closeBtn.style.background = '#fff';
-                    closeBtn.style.border = 'none';
-                    closeBtn.style.borderRadius = '50px';
-                    closeBtn.style.cursor = 'pointer';
-                    closeBtn.style.zIndex = 999999;
-                    overlay.appendChild(closeBtn);
-                    closeBtn.addEventListener('click', () => overlay.remove());
+                    const overlayCloseBtn = document.createElement('button');
+                    overlayCloseBtn.textContent = '✕';
+                    overlayCloseBtn.style.position = 'absolute';
+                    overlayCloseBtn.style.top = '20px';
+                    overlayCloseBtn.style.right = '30px';
+                    overlayCloseBtn.style.height = '32px';
+                    overlayCloseBtn.style.width = '32px';
+                    overlayCloseBtn.style.fontSize = '18px';
+                    overlayCloseBtn.style.fontWeight = 900;
+                    overlayCloseBtn.style.lineHeight = '20px';
+                    overlayCloseBtn.style.textAlign = 'center';
+                    overlayCloseBtn.style.textShadow = '0px 1px 0px #000';
+                    overlayCloseBtn.style.color = '#000';
+                    overlayCloseBtn.style.background = '#fff';
+                    overlayCloseBtn.style.border = 'none';
+                    overlayCloseBtn.style.borderRadius = '50px';
+                    overlayCloseBtn.style.cursor = 'pointer';
+                    overlayCloseBtn.style.zIndex = 999999;
+                    overlay.appendChild(overlayCloseBtn);
+                    overlayCloseBtn.addEventListener('click', () => overlay.remove());
                     overlay.addEventListener('click', (e) => {
                         if (e.target === overlay) overlay.remove();
                     });
@@ -486,8 +489,8 @@
         meta.textContent = formatArabicTimestamp(msg.created_at || Date.now());
         el.appendChild(text);
         el.appendChild(meta);
-        state.elements.messagesWrapper.appendChild(el);
-        const chatBody = state.elements.messagesWrapper.closest('.tg-chat-body');
+        messagesWrapper.appendChild(el);
+        const chatBody = messagesWrapper.closest('.tg-chat-body');
         if (!chatBody) return;
         requestAnimationFrame(() => {
             chatBody.scrollTo({
@@ -509,7 +512,7 @@
         } catch (e) {
             console.warn("Failed to save guest info in localStorage:", e);
         }
-    }    
+    }
 
     // Create guest user if needed
     async function createGuestIfNeeded(name = "Guest", phone = "") {
@@ -526,7 +529,7 @@
             const guestId = json.user_id || (json.data && json.data.user_id);
             const guestName = json.name || (json.data && json.data.name);
             const guestPhone = json.phone_number || (json.data && json.data.phone_number);
-            if ( guestId && guestName && guestPhone ) {
+            if (guestId && guestName && guestPhone) {
                 saveGuestInfo(guestId, guestName || name, guestPhone || phone);
                 // console.log("Guest Info registered successfully:", guestId, guestName, guestPhone);
                 return { guestId, guestName, guestPhone };
@@ -637,12 +640,12 @@
     // --- Socket handling ---
     // Bind socket events
     function bindSocketEvents(socket) {
-        if (socket._eventsBound) return;
-        socket._eventsBound = true;
         if (!socket) {
             console.error("bindSocketEvents called with no socket");
             return;
         }
+        if (socket._eventsBound) return;
+        socket._eventsBound = true;
         state.displayedMessageIds = new Set();
         socket.off("userMessages");
         socket.off("sendMessage");
@@ -651,7 +654,7 @@
             const messages = (Array.isArray(data?.data) ? data.data : [])
                 .map(normalizeMessage)
                 .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-                // console.log("messages received:", messages);
+            // console.log("messages received:", messages);
             if (!messages.length) {
                 triggerAutomatedWelcomeIfNeeded();
                 return;
@@ -737,7 +740,7 @@
             console.error("Socket connection error:", err);
         }
     }
-    
+
     // --- Typing indicator helpers ---
     // function showTyping(name) {
     //     if (!state.elements || !state.elements.typingIndicator) return;
@@ -760,7 +763,7 @@
 
     // Mark chat as used when user sends a message or interacts
     function markChatUsed() {
-        try { sessionStorage.setItem(SESSION_KEYS.CHAT_USED, "1"); } 
+        try { sessionStorage.setItem(SESSION_KEYS.CHAT_USED, "1"); }
         catch (e) { console.warn("Failed to mark chat as used", e); }
     }
 
@@ -790,16 +793,16 @@
                     </div>
                 `;
                 container.querySelector(".tg-chat-widget").insertAdjacentHTML("beforeend", chatMarkup);
-                rebindChatElements();
             }
+            rebindChatElements();
             if (!state.socket) await connectSocket();
-            state.socket.emit('userMessages', { user_id: state.guest.id });
+            if (state.socket) state.socket.emit('userMessages', { user_id: state.guest.id });
         }
         // If logged-in user, auto-connect
         if (state.user.is_logged_in) {
             rebindChatElements();
             if (!state.socket) await connectSocket();
-            state.socket.emit('userMessages', { user_id: state.user.id });
+            if (state.socket) state.socket.emit('userMessages', { user_id: state.user.id });
         }
     })();
 
